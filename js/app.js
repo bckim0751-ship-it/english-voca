@@ -25,6 +25,7 @@ function blankWord(sentence,word){
   r=sentence.replace(new RegExp('\\b'+esc+'(?:s|es|d|ed|ing|tion|ment|ive|al|ity|ly)?\\b','gi'),'_____');
   return r!==sentence?r:sentence.replace(new RegExp(esc,'gi'),'_____');
 }
+
 function init(){
   const today=todayStr();
   state.todayWords=getDailyWords(today);
@@ -86,11 +87,14 @@ function markWord(status){
   updateDots();
   const allDone=state.todayWords.every(w=>state.seen[w.id]);
   if(allDone)document.getElementById('done-banner').classList.add('show');
-  setTimeout(()=>{if(state.idx<state.todayWords.length-1){state.idx++;renderCard();}},220);
+  setTimeout(()=>{
+    if(state.idx<state.todayWords.length-1){state.idx++;renderCard();}
+  },220);
 }
 function updateRing(){
   const done=state.todayWords.filter(w=>state.seen[w.id]).length;
-  document.getElementById('dp-fill').style.strokeDashoffset=CIRC*(1-done/10);
+  const offset=CIRC*(1-done/10);
+  document.getElementById('dp-fill').style.strokeDashoffset=offset;
   document.getElementById('dp-text').textContent=done+'/10';
 }
 function prevCard(){if(state.idx>0){state.idx--;renderCard();}}
@@ -101,6 +105,8 @@ function switchTab(tab,btn){
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   if(tab==='stats')renderStats();
 }
+
+// Quiz
 function startQuiz(){
   state.quizQs=buildQuiz(state.todayWords);
   state.quizIdx=0;
@@ -139,7 +145,8 @@ function renderQ(){
   const main=document.getElementById('q-main');
   if(q.type==='fill'){
     hint.textContent='🇰🇷 '+q.hint;
-    main.innerHTML='<div class="q-sentence">'+q.sentence.replace('_____','<span class="blank">_____</span>')+'</div>';
+    const blanked=q.sentence.replace('_____','<span class="blank">_____</span>');
+    main.innerHTML='<div class="q-sentence">'+blanked+'</div>';
   }else{
     hint.textContent='';
     main.textContent=q.q;
@@ -185,6 +192,8 @@ function showResult(){
     `<div class="qr-row"><span class="qr-word">${a.w.word}</span><span class="qr-chip">${tl[a.type]}</span><span class="qr-ko">${a.w.korean}</span><span>${a.ok?'✅':'❌'}</span></div>`
   ).join('');
 }
+
+// Word list
 let curLv='all';
 function renderWordList(lv){
   if(lv!==undefined)curLv=lv;
@@ -202,6 +211,8 @@ function setLv(lv,btn){
   btn.classList.add('active');
   renderWordList(lv==='all'?'all':Number(lv));
 }
+
+// Stats
 function renderStats(){
   const p=state.prog;
   document.getElementById('st-days').textContent=p.dates.length;
@@ -213,4 +224,5 @@ function renderStats(){
     ?hist.map(h=>`<div class="hi"><span class="hi-date">${h.date}</span><span class="hi-score">${h.score}/10</span></div>`).join('')
     :'<p class="no-data">퀴즈 기록이 없어요</p>';
 }
+
 document.addEventListener('DOMContentLoaded',init);
