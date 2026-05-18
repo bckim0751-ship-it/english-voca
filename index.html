@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>영단어 마스터</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="logo">
+          <span class="logo-icon">📚</span>
+          <h1>영단어 마스터</h1>
+        </div>
+        <div class="streak-badge">
+          <span>🔥</span>
+          <span id="streak-count">0</span>
+          <span>일 연속</span>
+        </div>
+      </div>
+      <nav class="tab-nav">
+        <button class="tab-btn active" data-tab="today">오늘의 단어</button>
+        <button class="tab-btn" data-tab="quiz">퀴즈</button>
+        <button class="tab-btn" data-tab="review">단어장</button>
+        <button class="tab-btn" data-tab="stats">통계</button>
+      </nav>
+    </header>
+
+    <main class="app-main">
+      <!-- Today's Words -->
+      <section id="tab-today" class="tab-pane active">
+        <div class="today-header">
+          <div class="today-info">
+            <h2>오늘의 단어</h2>
+            <p class="today-date" id="today-date"></p>
+          </div>
+          <div class="progress-ring-wrap">
+            <svg class="progress-ring" width="56" height="56" viewBox="0 0 56 56">
+              <circle class="ring-bg" cx="28" cy="28" r="22"/>
+              <circle class="ring-fill" id="ring-fill" cx="28" cy="28" r="22"/>
+            </svg>
+            <span class="ring-text" id="ring-text">0/10</span>
+          </div>
+        </div>
+
+        <div class="flashcard-scene">
+          <div class="flashcard" id="flashcard" onclick="flipCard()">
+            <div class="card-inner" id="card-inner">
+              <div class="card-front">
+                <span class="card-level" id="card-level"></span>
+                <span class="card-pos" id="card-pos-front"></span>
+                <h2 class="card-word" id="card-word-front"></h2>
+                <p class="flip-hint">탭하여 뜻 보기 👆</p>
+              </div>
+              <div class="card-back">
+                <p class="back-word" id="card-word-back"></p>
+                <p class="back-korean" id="card-korean"></p>
+                <p class="back-def" id="card-def"></p>
+                <div class="back-example">
+                  <span class="ex-label">예문</span>
+                  <p id="card-example"></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-actions" id="card-actions">
+          <button class="btn-again" onclick="markWord('again')">🔁 다시 보기</button>
+          <button class="btn-got-it" onclick="markWord('got')">✅ 알았어요</button>
+        </div>
+
+        <div class="card-nav">
+          <button class="btn-nav" onclick="prevCard()">◀</button>
+          <span id="card-counter">1 / 10</span>
+          <button class="btn-nav" onclick="nextCard()">▶</button>
+        </div>
+
+        <div class="all-done-box" id="all-done-box">
+          <p>🎉 오늘 단어를 모두 학습했어요!</p>
+          <button class="btn-go-quiz" onclick="goToQuiz()">퀴즈 도전하기 →</button>
+        </div>
+      </section>
+
+      <!-- Quiz -->
+      <section id="tab-quiz" class="tab-pane">
+        <div id="quiz-intro" class="quiz-intro">
+          <div class="quiz-icon-big">🎯</div>
+          <h2>오늘의 퀴즈</h2>
+          <p>오늘 학습한 10개의 단어로<br>실력을 확인해 보세요!</p>
+          <button class="btn-primary" onclick="startQuiz()">시작하기</button>
+        </div>
+
+        <div id="quiz-play" style="display:none">
+          <div class="quiz-hdr">
+            <span id="q-progress-txt">1 / 10</span>
+            <div class="q-bar"><div class="q-bar-fill" id="q-bar-fill"></div></div>
+          </div>
+          <div class="question-box" id="question-box">
+            <div class="q-type" id="q-type"></div>
+            <div class="q-text" id="q-text"></div>
+          </div>
+          <div class="options" id="options"></div>
+        </div>
+
+        <div id="quiz-done" style="display:none">
+          <div class="score-circle">
+            <span id="final-score">0</span>
+            <span class="score-denom">/10</span>
+          </div>
+          <h2 id="score-msg"></h2>
+          <p id="score-sub" class="score-sub"></p>
+          <div class="answer-review" id="answer-review"></div>
+          <div class="done-btns">
+            <button class="btn-outline" onclick="startQuiz()">다시 풀기</button>
+            <button class="btn-primary" onclick="switchTab('stats')">결과 보기</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Word List -->
+      <section id="tab-review" class="tab-pane">
+        <div class="review-hdr">
+          <h2>단어장 <span id="review-count" class="review-count"></span></h2>
+          <div class="level-filters">
+            <button class="lvl-btn active" onclick="setLevel('all',this)">전체</button>
+            <button class="lvl-btn" onclick="setLevel(1,this)">기초</button>
+            <button class="lvl-btn" onclick="setLevel(2,this)">중급</button>
+            <button class="lvl-btn" onclick="setLevel(3,this)">고급</button>
+          </div>
+        </div>
+        <div class="word-list" id="word-list"></div>
+      </section>
+
+      <!-- Stats -->
+      <section id="tab-stats" class="tab-pane">
+        <h2 class="stats-title">학습 통계</h2>
+        <div class="stat-cards">
+          <div class="stat-card">
+            <div class="sc-icon">📅</div>
+            <div class="sc-val" id="sc-days">0</div>
+            <div class="sc-lbl">학습일</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-icon">📖</div>
+            <div class="sc-val" id="sc-words">0</div>
+            <div class="sc-lbl">총 단어수</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-icon">🔥</div>
+            <div class="sc-val" id="sc-streak">0</div>
+            <div class="sc-lbl">연속 학습</div>
+          </div>
+          <div class="stat-card">
+            <div class="sc-icon">🎯</div>
+            <div class="sc-val" id="sc-acc">-</div>
+            <div class="sc-lbl">정답률</div>
+          </div>
+        </div>
+        <div class="history-section">
+          <h3>퀴즈 기록</h3>
+          <div id="quiz-history"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/words.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
