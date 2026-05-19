@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>비즈니스 영단어</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
   <div id="app">
@@ -73,11 +73,10 @@
         <div id="q-intro" class="q-intro">
           <div class="qi-icon">🎯</div>
           <h2>오늘의 퀴즈</h2>
-          <p>10문제 · 3가지 유형</p>
+          <p>20문제 · 빈칸 채우기</p>
           <div class="qi-types">
-            <span class="qi-chip">영→한</span>
-            <span class="qi-chip">한→영</span>
-            <span class="qi-chip">빈칸 채우기</span>
+            <span class="qi-chip">🇰🇷 한국어 문장 힌트</span>
+            <span class="qi-chip">영어 빈칸 채우기</span>
           </div>
           <button class="btn-green" onclick="startQuiz()">시작하기</button>
         </div>
@@ -86,7 +85,7 @@
           <div class="qp-head">
             <div class="qp-meta">
               <span class="qp-type" id="qp-type"></span>
-              <span class="qp-num" id="qp-num">1/10</span>
+              <span class="qp-num" id="qp-num">1/20</span>
             </div>
             <div class="qp-bar"><div class="qp-bar-fill" id="qp-bar-fill"></div></div>
           </div>
@@ -99,7 +98,7 @@
 
         <div id="q-result" style="display:none">
           <div class="qr-score">
-            <span id="qr-num">0</span><span class="qr-den">/10</span>
+            <span id="qr-num">0</span><span class="qr-den">/20</span>
           </div>
           <h2 id="qr-msg"></h2>
           <p class="qr-sub" id="qr-sub"></p>
@@ -177,7 +176,7 @@
     </nav>
 
   </div>
-  <script src="js/words.js"></script>
-  <script src="js/app.js"></script>
+  <script src="js/words.js?v=3"></script>
+  <script src="js/app.js?v=3"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 const CIRC=131.95;
+const QUIZ_COUNT=20;
 const state={
   idx:0,
   todayWords:[],seen:{},
@@ -21,6 +22,7 @@ function seededShuffle(arr,seed){
 }
 function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h);}
 function getDailyWords(ds){return seededShuffle([...WORDS],hashStr(ds)).slice(0,10);}
+function getDailyQuizWords(ds){return seededShuffle([...WORDS],hashStr(ds)+9999).slice(0,QUIZ_COUNT);}
 
 function blankWord(sentence,word){
   const esc=word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -142,7 +144,8 @@ function switchTab(tab){
 }
 
 function startQuiz(){
-  state.quizQs=buildQuiz(state.todayWords);
+  const quizWords=getDailyQuizWords(todayStr());
+  state.quizQs=buildQuiz(quizWords);
   state.quizIdx=0;
   state.quizAnswers=[];
   document.getElementById('q-intro').style.display='none';
@@ -196,15 +199,17 @@ function pick(sel){
 
 function showResult(){
   const score=state.quizAnswers.filter(a=>a.ok).length;
+  const total=state.quizAnswers.length;
   state.prog.correct+=score;
-  state.prog.answered+=10;
-  state.prog.history.push({date:todayStr(),score});
+  state.prog.answered+=total;
+  state.prog.history.push({date:todayStr(),score,total});
   saveProg();
   document.getElementById('q-play').style.display='none';
   document.getElementById('q-result').style.display='flex';
   document.getElementById('qr-num').textContent=score;
-  const msgs=[[10,'완벽해요! 🎉','10개 모두 정답!'],[8,'훌륭해요! 👏','거의 다 맞혔어요'],[6,'잘 했어요! 😊','조금 더 연습해요'],[0,'계속 화이팅! 💪','복습이 필요해요']];
-  const [,m,s]=msgs.find(([t])=>score>=t);
+  const pct=score/total;
+  const msgs=[[1,'완벽해요! 🎉','20개 모두 정답!'],[0.8,'훌륭해요! 👏','거의 다 맞혔어요'],[0.6,'잘 했어요! 😊','조금 더 연습해요'],[0,'계속 화이팅! 💪','복습이 필요해요']];
+  const [,m,s]=msgs.find(([t])=>pct>=t);
   document.getElementById('qr-msg').textContent=m;
   document.getElementById('qr-sub').textContent=s;
   document.getElementById('qr-list').innerHTML=state.quizAnswers.map(a=>
@@ -238,7 +243,7 @@ function renderStats(){
   document.getElementById('st-acc').textContent=p.answered>0?Math.round(p.correct/p.answered*100)+'%':'-';
   const hist=[...p.history].reverse().slice(0,10);
   document.getElementById('st-hist-list').innerHTML=hist.length
-    ?hist.map(h=>`<div class="hi"><span class="hi-date">${h.date}</span><span class="hi-score">${h.score}/10</span></div>`).join('')
+    ?hist.map(h=>`<div class="hi"><span class="hi-date">${h.date}</span><span class="hi-score">${h.score}/${h.total||20}</span></div>`).join('')
     :'<p class="no-data">퀴즈 기록이 없어요</p>';
 }
 
