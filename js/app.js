@@ -92,7 +92,7 @@ function renderLearnCard(){
   }
   const item=state.learnItems[state.idx];
   const blanked=item.sentence.replace('_____','<span class="blank">_____</span>');
-  document.getElementById('lc-korean').textContent=item.w.korean;
+  document.getElementById('lc-korean').textContent=item.w.example_ko||item.w.korean;
   document.getElementById('lc-sentence').innerHTML=blanked;
   document.getElementById('learn-feedback').style.display='none';
   document.getElementById('learn-card').style.display='block';
@@ -121,7 +121,6 @@ function pickLearn(sel){
   });
   state.seen[item.w.id]=ok?'know':'again';
 
-  // show feedback
   const fb=document.getElementById('learn-feedback');
   fb.style.display='flex';
   fb.className='learn-feedback '+(ok?'fb-ok':'fb-wrong');
@@ -171,7 +170,7 @@ function buildQuiz(words){
     if(type==='fill'){
       const sentence=blankWord(w.example,w.word);
       const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+200);
-      return{w,type,sentence,hint:w.korean,opts,correctIdx:opts.indexOf(w.word)};
+      return{w,type,sentence,hint:w.example_ko||w.korean,opts,correctIdx:opts.indexOf(w.word)};
     }else if(type==='en-ko'){
       const opts=seededShuffle([w.korean,...others.map(x=>x.korean)],w.id+i*13);
       return{w,type,q:w.word,opts,correctIdx:opts.indexOf(w.korean)};
