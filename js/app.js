@@ -90,12 +90,11 @@ function renderLearnCard(){
   }
   const item=state.learnItems[state.idx];
   const blanked=item.sentence.replace('_____','<span class="blank">_____</span>');
-  document.getElementById('lc-korean').textContent=item.w.example_ko;
+  document.getElementById('lc-korean').textContent=item.w.example_ko||item.w.korean;
   document.getElementById('lc-sentence').innerHTML=blanked;
   document.getElementById('learn-feedback').style.display='none';
   document.getElementById('learn-card').style.display='block';
   document.getElementById('learn-opts').style.display='grid';
-
   const el=document.getElementById('learn-opts');
   el.innerHTML='';
   item.opts.forEach((opt,i)=>{
@@ -118,13 +117,11 @@ function pickLearn(sel){
     if(i===sel&&!ok)b.classList.add('wrong');
   });
   state.seen[item.w.id]=ok?'know':'again';
-
   const fb=document.getElementById('learn-feedback');
   fb.style.display='flex';
   fb.className='learn-feedback '+(ok?'fb-ok':'fb-wrong');
   document.getElementById('lf-word').textContent=(ok?'✅ ':'❌ ')+item.w.word+' — '+item.w.korean;
   document.getElementById('lf-def').textContent=item.w.definition;
-
   if(ok){
     setTimeout(nextLearnCard,1400);
     document.getElementById('btn-next').style.display='none';
@@ -135,14 +132,10 @@ function pickLearn(sel){
   updateRing();
 }
 
-function nextLearnCard(){
-  state.idx++;
-  renderLearnCard();
-}
-
+function nextLearnCard(){state.idx++;renderLearnCard();}
 function goQuiz(){switchTab('quiz');startQuiz();}
 
-function switchTab(tab,btn){
+function switchTab(tab){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   if(tab==='stats')renderStats();
@@ -159,21 +152,11 @@ function startQuiz(){
 }
 
 function buildQuiz(words){
-  const types=['en-ko','ko-en','fill'];
   return words.map((w,i)=>{
-    const type=types[i%3];
     const others=seededShuffle(WORDS.filter(x=>x.id!==w.id),w.id*31+i*7).slice(0,3);
-    if(type==='fill'){
-      const sentence=blankWord(w.example,w.word);
-      const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+200);
-      return{w,type,sentence,hint:w.example_ko,opts,correctIdx:opts.indexOf(w.word)};
-    }else if(type==='en-ko'){
-      const opts=seededShuffle([w.korean,...others.map(x=>x.korean)],w.id+i*13);
-      return{w,type,q:w.word,opts,correctIdx:opts.indexOf(w.korean)};
-    }else{
-      const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+100);
-      return{w,type,q:w.korean,opts,correctIdx:opts.indexOf(w.word)};
-    }
+    const sentence=blankWord(w.example,w.word);
+    const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+200);
+    return{w,sentence,hint:w.example_ko||w.korean,opts,correctIdx:opts.indexOf(w.word)};
   });
 }
 
@@ -182,18 +165,10 @@ function renderQ(){
   const cur=state.quizIdx+1,total=state.quizQs.length;
   document.getElementById('qp-num').textContent=cur+'/'+total;
   document.getElementById('qp-bar-fill').style.width=(cur/total*100)+'%';
-  const tl={'en-ko':'영어 → 한국어','ko-en':'한국어 → 영어','fill':'빈칸 채우기'};
-  document.getElementById('qp-type').textContent=tl[q.type];
-  const hint=document.getElementById('q-hint');
-  const main=document.getElementById('q-main');
-  if(q.type==='fill'){
-    hint.textContent='🇰🇷 '+q.hint;
-    const blanked=q.sentence.replace('_____','<span class="blank">_____</span>');
-    main.innerHTML='<div class="q-sentence">'+blanked+'</div>';
-  }else{
-    hint.textContent='';
-    main.textContent=q.q;
-  }
+  document.getElementById('qp-type').textContent='빈칸 채우기';
+  document.getElementById('q-hint').textContent='🇰🇷 '+q.hint;
+  const blanked=q.sentence.replace('_____','<span class="blank">_____</span>');
+  document.getElementById('q-main').innerHTML='<div class="q-sentence">'+blanked+'</div>';
   const el=document.getElementById('q-opts');
   el.innerHTML='';
   q.opts.forEach((opt,i)=>{
@@ -208,7 +183,7 @@ function renderQ(){
 function pick(sel){
   const q=state.quizQs[state.quizIdx];
   const ok=sel===q.correctIdx;
-  state.quizAnswers.push({w:q.w,ok,type:q.type});
+  state.quizAnswers.push({w:q.w,ok});
   document.querySelectorAll('.opt').forEach((b,i)=>{
     b.disabled=true;
     if(i===q.correctIdx)b.classList.add('correct');
@@ -232,9 +207,8 @@ function showResult(){
   const [,m,s]=msgs.find(([t])=>score>=t);
   document.getElementById('qr-msg').textContent=m;
   document.getElementById('qr-sub').textContent=s;
-  const tl={'en-ko':'영→한','ko-en':'한→영','fill':'빈칸'};
   document.getElementById('qr-list').innerHTML=state.quizAnswers.map(a=>
-    `<div class="qr-row"><span class="qr-word">${a.w.word}</span><span class="qr-chip">${tl[a.type]}</span><span class="qr-ko">${a.w.korean}</span><span>${a.ok?'✅':'❌'}</span></div>`
+    `<div class="qr-row"><span class="qr-word">${a.w.word}</span><span class="qr-ko">${a.w.korean}</span><span>${a.ok?'✅':'❌'}</span></div>`
   ).join('');
 }
 
