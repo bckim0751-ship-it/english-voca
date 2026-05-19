@@ -3,8 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>비즈니스 영단어</title>
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <div id="app">
@@ -21,7 +24,7 @@
 
     <main class="main-content">
 
-      <!-- ① 오늘의 학습 -->
+      <!-- 학습 -->
       <section id="tab-today" class="tab-pane active">
         <div class="section-head">
           <div>
@@ -39,7 +42,6 @@
 
         <div class="step-dots" id="step-dots"></div>
 
-        <!-- Fill-in-blank card -->
         <div class="learn-card" id="learn-card">
           <div class="lc-hint">
             <span class="lc-hint-label">🇰🇷 힌트</span>
@@ -51,24 +53,21 @@
           </div>
         </div>
 
-        <!-- Options -->
         <div class="learn-opts" id="learn-opts"></div>
 
-        <!-- Answer feedback -->
         <div class="learn-feedback" id="learn-feedback" style="display:none">
           <div class="lf-word" id="lf-word"></div>
           <div class="lf-def" id="lf-def"></div>
           <button class="btn-next" id="btn-next" onclick="nextLearnCard()">다음 →</button>
         </div>
 
-        <!-- Done banner -->
         <div class="done-banner" id="done-banner">
           <p>🎉 오늘 학습 완료!</p>
           <button onclick="goQuiz()">퀴즈 도전 →</button>
         </div>
       </section>
 
-      <!-- ② 퀴즈 -->
+      <!-- 퀴즈 -->
       <section id="tab-quiz" class="tab-pane">
         <div id="q-intro" class="q-intro">
           <div class="qi-icon">🎯</div>
@@ -110,7 +109,7 @@
         </div>
       </section>
 
-      <!-- ③ 단어장 -->
+      <!-- 단어장 -->
       <section id="tab-words" class="tab-pane">
         <div class="wl-head">
           <h2>단어장 <span class="wl-cnt" id="wl-cnt"></span></h2>
@@ -124,7 +123,7 @@
         <div class="wl-list" id="wl-list"></div>
       </section>
 
-      <!-- ④ 통계 -->
+      <!-- 통계 -->
       <section id="tab-stats" class="tab-pane">
         <h2 class="st-title">학습 통계</h2>
         <div class="st-grid">
@@ -157,26 +156,26 @@
     </main>
 
     <nav class="bottom-nav">
-      <button class="bn-btn active" data-tab="today" onclick="switchTab('today',this)">
+      <button class="bn-btn active" data-tab="today" onclick="switchTab('today')">
         <span class="bn-ico">📚</span>
         <span class="bn-lbl">학습</span>
       </button>
-      <button class="bn-btn" data-tab="quiz" onclick="switchTab('quiz',this)">
+      <button class="bn-btn" data-tab="quiz" onclick="switchTab('quiz')">
         <span class="bn-ico">🎯</span>
         <span class="bn-lbl">퀴즈</span>
       </button>
-      <button class="bn-btn" data-tab="words" onclick="switchTab('words',this)">
+      <button class="bn-btn" data-tab="words" onclick="switchTab('words')">
         <span class="bn-ico">📋</span>
         <span class="bn-lbl">단어장</span>
       </button>
-      <button class="bn-btn" data-tab="stats" onclick="switchTab('stats',this)">
+      <button class="bn-btn" data-tab="stats" onclick="switchTab('stats')">
         <span class="bn-ico">📊</span>
         <span class="bn-lbl">통계</span>
       </button>
     </nav>
 
   </div>
-  <script src="js/words.js?v=3"></script>
-  <script src="js/app.js?v=3"></script>
+  <script src="js/words.js?v=4"></script>
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
