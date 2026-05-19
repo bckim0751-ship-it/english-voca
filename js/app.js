@@ -72,8 +72,6 @@ function updateRing(){
   document.getElementById('dp-text').textContent=done+'/10';
 }
 
-// ── Learn (fill-in-blank) ──
-
 function buildLearnItems(){
   state.learnItems=state.todayWords.map((w,i)=>{
     const sentence=blankWord(w.example,w.word);
@@ -92,7 +90,7 @@ function renderLearnCard(){
   }
   const item=state.learnItems[state.idx];
   const blanked=item.sentence.replace('_____','<span class="blank">_____</span>');
-  document.getElementById('lc-korean').textContent=item.w.example_ko||item.w.korean;
+  document.getElementById('lc-korean').textContent=item.w.example_ko;
   document.getElementById('lc-sentence').innerHTML=blanked;
   document.getElementById('learn-feedback').style.display='none';
   document.getElementById('learn-card').style.display='block';
@@ -150,8 +148,6 @@ function switchTab(tab,btn){
   if(tab==='stats')renderStats();
 }
 
-// ── Quiz ──
-
 function startQuiz(){
   state.quizQs=buildQuiz(state.todayWords);
   state.quizIdx=0;
@@ -170,7 +166,7 @@ function buildQuiz(words){
     if(type==='fill'){
       const sentence=blankWord(w.example,w.word);
       const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+200);
-      return{w,type,sentence,hint:w.example_ko||w.korean,opts,correctIdx:opts.indexOf(w.word)};
+      return{w,type,sentence,hint:w.example_ko,opts,correctIdx:opts.indexOf(w.word)};
     }else if(type==='en-ko'){
       const opts=seededShuffle([w.korean,...others.map(x=>x.korean)],w.id+i*13);
       return{w,type,q:w.word,opts,correctIdx:opts.indexOf(w.korean)};
@@ -242,7 +238,6 @@ function showResult(){
   ).join('');
 }
 
-// ── Word list ──
 let curLv='all';
 function renderWordList(lv){
   if(lv!==undefined)curLv=lv;
@@ -261,7 +256,6 @@ function setLv(lv,btn){
   renderWordList(lv==='all'?'all':Number(lv));
 }
 
-// ── Stats ──
 function renderStats(){
   const p=state.prog;
   document.getElementById('st-days').textContent=p.dates.length;
