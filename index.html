@@ -9,7 +9,6 @@
 <body>
   <div id="app">
 
-    <!-- Header -->
     <header class="top-bar">
       <div class="top-bar-inner">
         <div class="top-logo">📗 비즈니스 영단어</div>
@@ -20,10 +19,9 @@
       </div>
     </header>
 
-    <!-- Main Content -->
     <main class="main-content">
 
-      <!-- ① 오늘의 단어 -->
+      <!-- ① 오늘의 학습 -->
       <section id="tab-today" class="tab-pane active">
         <div class="section-head">
           <div>
@@ -39,61 +37,39 @@
           </div>
         </div>
 
-        <!-- Step dots -->
         <div class="step-dots" id="step-dots"></div>
 
-        <!-- Card -->
-        <div class="card-wrap">
-          <div class="word-card" id="word-card" onclick="flipCard()">
-            <div class="wc-inner" id="wc-inner">
-              <!-- Front -->
-              <div class="wc-front">
-                <span class="wc-badge" id="wc-badge"></span>
-                <p class="wc-pos" id="wc-pos"></p>
-                <h1 class="wc-word" id="wc-word"></h1>
-                <p class="wc-tap">탭해서 뜻 확인 👆</p>
-              </div>
-              <!-- Back -->
-              <div class="wc-back">
-                <p class="wc-b-en" id="wc-b-en"></p>
-                <p class="wc-b-ko" id="wc-b-ko"></p>
-                <p class="wc-b-def" id="wc-b-def"></p>
-                <div class="wc-b-ex">
-                  <span class="ex-chip">예문</span>
-                  <p id="wc-b-example"></p>
-                </div>
-              </div>
-            </div>
+        <!-- Fill-in-blank card -->
+        <div class="learn-card" id="learn-card">
+          <div class="lc-hint">
+            <span class="lc-hint-label">🇰🇷 힌트</span>
+            <p class="lc-korean" id="lc-korean"></p>
+          </div>
+          <div class="lc-sentence-wrap">
+            <p class="lc-instruction">빈칸에 알맞은 영어 단어를 고르세요</p>
+            <p class="lc-sentence" id="lc-sentence"></p>
           </div>
         </div>
 
-        <!-- Know / Again -->
-        <div class="know-btns" id="know-btns">
-          <button class="kb-again" onclick="markWord('again')">
-            <span class="kb-icon">↩</span> 다시
-          </button>
-          <button class="kb-know" onclick="markWord('know')">
-            <span class="kb-icon">✓</span> 알아요
-          </button>
-        </div>
+        <!-- Options -->
+        <div class="learn-opts" id="learn-opts"></div>
 
-        <!-- Nav -->
-        <div class="card-nav">
-          <button class="cn-btn" onclick="prevCard()">‹</button>
-          <span class="cn-idx" id="cn-idx">1 / 10</span>
-          <button class="cn-btn" onclick="nextCard()">›</button>
+        <!-- Answer feedback -->
+        <div class="learn-feedback" id="learn-feedback" style="display:none">
+          <div class="lf-word" id="lf-word"></div>
+          <div class="lf-def" id="lf-def"></div>
+          <button class="btn-next" id="btn-next" onclick="nextLearnCard()">다음 →</button>
         </div>
 
         <!-- Done banner -->
         <div class="done-banner" id="done-banner">
-          <p>🎉 오늘 단어 완료!</p>
+          <p>🎉 오늘 학습 완료!</p>
           <button onclick="goQuiz()">퀴즈 도전 →</button>
         </div>
       </section>
 
       <!-- ② 퀴즈 -->
       <section id="tab-quiz" class="tab-pane">
-        <!-- Intro -->
         <div id="q-intro" class="q-intro">
           <div class="qi-icon">🎯</div>
           <h2>오늘의 퀴즈</h2>
@@ -106,7 +82,6 @@
           <button class="btn-green" onclick="startQuiz()">시작하기</button>
         </div>
 
-        <!-- Play -->
         <div id="q-play" style="display:none">
           <div class="qp-head">
             <div class="qp-meta">
@@ -122,7 +97,6 @@
           <div class="q-opts" id="q-opts"></div>
         </div>
 
-        <!-- Result -->
         <div id="q-result" style="display:none">
           <div class="qr-score">
             <span id="qr-num">0</span><span class="qr-den">/10</span>
@@ -183,7 +157,6 @@
       </section>
     </main>
 
-    <!-- Bottom Nav -->
     <nav class="bottom-nav">
       <button class="bn-btn active" data-tab="today" onclick="switchTab('today',this)">
         <span class="bn-ico">📚</span>

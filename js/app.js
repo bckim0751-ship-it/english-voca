@@ -1,16 +1,19 @@
 const CIRC=131.95;
 const state={
-  idx:0,flipped:false,
+  idx:0,
   todayWords:[],seen:{},
+  learnItems:[],
   quizQs:[],quizIdx:0,quizAnswers:[],
   prog:loadProg()
 };
+
 function loadProg(){try{return JSON.parse(localStorage.getItem('evProg'))||fresh();}catch(e){return fresh();}}
 function fresh(){return{streak:0,lastDate:null,dates:[],correct:0,answered:0,history:[]};}
 function saveProg(){localStorage.setItem('evProg',JSON.stringify(state.prog));}
 function todayStr(){const d=new Date();return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
 function p2(n){return String(n).padStart(2,'0');}
 function dateStr(o){const d=new Date();d.setDate(d.getDate()+o);return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());}
+
 function seededShuffle(arr,seed){
   const r=[...arr];let s=seed>>>0;
   for(let i=r.length-1;i>0;i--){s=(s*1664525+1013904223)>>>0;const j=s%(i+1);[r[i],r[j]]=[r[j],r[i]];}
@@ -18,6 +21,7 @@ function seededShuffle(arr,seed){
 }
 function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h);}
 function getDailyWords(ds){return seededShuffle([...WORDS],hashStr(ds)).slice(0,10);}
+
 function blankWord(sentence,word){
   const esc=word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
   let r=sentence.replace(new RegExp('\\b'+esc+'\\b','gi'),'_____');
@@ -34,9 +38,11 @@ function init(){
   const fmt={month:'long',day:'numeric',weekday:'short'};
   document.getElementById('today-date').textContent=new Date().toLocaleDateString('ko-KR',fmt);
   renderStepDots();
-  renderCard();
+  buildLearnItems();
+  renderLearnCard();
   renderWordList();
 }
+
 function updateStreak(today){
   const yest=dateStr(-1);
   if(state.prog.lastDate===today)return;
@@ -45,10 +51,12 @@ function updateStreak(today){
   state.prog.lastDate=today;
   saveProg();
 }
+
 function renderStepDots(){
   const el=document.getElementById('step-dots');
   el.innerHTML=state.todayWords.map((_,i)=>`<div class="dot" id="dot-${i}"></div>`).join('');
 }
+
 function updateDots(){
   state.todayWords.forEach((_,i)=>{
     const d=document.getElementById('dot-'+i);
@@ -56,57 +64,95 @@ function updateDots(){
     d.className='dot'+(state.seen[state.todayWords[i].id]?' done':i===state.idx?' current':'');
   });
 }
-function renderCard(){
-  const w=state.todayWords[state.idx];
-  state.flipped=false;
-  document.getElementById('wc-inner').classList.remove('flip');
-  document.getElementById('know-btns').classList.remove('show');
-  const lvl={1:'기초',2:'중급',3:'고급'};
-  const pos={v:'verb',n:'noun',adj:'adjective',adv:'adverb',prep:'preposition'};
-  document.getElementById('wc-badge').textContent=lvl[w.level]||'';
-  document.getElementById('wc-pos').textContent=pos[w.pos]||w.pos;
-  document.getElementById('wc-word').textContent=w.word;
-  document.getElementById('wc-b-en').textContent=w.word;
-  document.getElementById('wc-b-ko').textContent=w.korean;
-  document.getElementById('wc-b-def').textContent=w.definition;
-  document.getElementById('wc-b-example').textContent=w.example;
-  document.getElementById('cn-idx').textContent=(state.idx+1)+' / '+state.todayWords.length;
-  updateDots();
-  updateRing();
-}
-function flipCard(){
-  state.flipped=!state.flipped;
-  document.getElementById('wc-inner').classList.toggle('flip');
-  if(state.flipped)document.getElementById('know-btns').classList.add('show');
-  else document.getElementById('know-btns').classList.remove('show');
-}
-function markWord(status){
-  const w=state.todayWords[state.idx];
-  state.seen[w.id]=status;
-  updateRing();
-  updateDots();
-  const allDone=state.todayWords.every(w=>state.seen[w.id]);
-  if(allDone)document.getElementById('done-banner').classList.add('show');
-  setTimeout(()=>{
-    if(state.idx<state.todayWords.length-1){state.idx++;renderCard();}
-  },220);
-}
+
 function updateRing(){
-  const done=state.todayWords.filter(w=>state.seen[w.id]).length;
+  const done=Object.keys(state.seen).length;
   const offset=CIRC*(1-done/10);
   document.getElementById('dp-fill').style.strokeDashoffset=offset;
   document.getElementById('dp-text').textContent=done+'/10';
 }
-function prevCard(){if(state.idx>0){state.idx--;renderCard();}}
-function nextCard(){if(state.idx<state.todayWords.length-1){state.idx++;renderCard();}}
+
+// ── Learn (fill-in-blank) ──
+
+function buildLearnItems(){
+  state.learnItems=state.todayWords.map((w,i)=>{
+    const sentence=blankWord(w.example,w.word);
+    const others=seededShuffle(WORDS.filter(x=>x.id!==w.id),w.id*31+i*7).slice(0,3);
+    const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+200);
+    return{w,sentence,opts,correctIdx:opts.indexOf(w.word)};
+  });
+}
+
+function renderLearnCard(){
+  if(state.idx>=state.todayWords.length){
+    document.getElementById('learn-card').style.display='none';
+    document.getElementById('learn-opts').style.display='none';
+    document.getElementById('done-banner').classList.add('show');
+    return;
+  }
+  const item=state.learnItems[state.idx];
+  const blanked=item.sentence.replace('_____','<span class="blank">_____</span>');
+  document.getElementById('lc-korean').textContent=item.w.korean;
+  document.getElementById('lc-sentence').innerHTML=blanked;
+  document.getElementById('learn-feedback').style.display='none';
+  document.getElementById('learn-card').style.display='block';
+  document.getElementById('learn-opts').style.display='grid';
+
+  const el=document.getElementById('learn-opts');
+  el.innerHTML='';
+  item.opts.forEach((opt,i)=>{
+    const b=document.createElement('button');
+    b.className='lopt';
+    b.textContent=opt;
+    b.onclick=()=>pickLearn(i);
+    el.appendChild(b);
+  });
+  updateDots();
+  updateRing();
+}
+
+function pickLearn(sel){
+  const item=state.learnItems[state.idx];
+  const ok=sel===item.correctIdx;
+  document.querySelectorAll('.lopt').forEach((b,i)=>{
+    b.disabled=true;
+    if(i===item.correctIdx)b.classList.add('correct');
+    if(i===sel&&!ok)b.classList.add('wrong');
+  });
+  state.seen[item.w.id]=ok?'know':'again';
+
+  // show feedback
+  const fb=document.getElementById('learn-feedback');
+  fb.style.display='flex';
+  fb.className='learn-feedback '+(ok?'fb-ok':'fb-wrong');
+  document.getElementById('lf-word').textContent=(ok?'✅ ':'❌ ')+item.w.word+' — '+item.w.korean;
+  document.getElementById('lf-def').textContent=item.w.definition;
+
+  if(ok){
+    setTimeout(nextLearnCard,1400);
+    document.getElementById('btn-next').style.display='none';
+  }else{
+    document.getElementById('btn-next').style.display='inline-block';
+  }
+  updateDots();
+  updateRing();
+}
+
+function nextLearnCard(){
+  state.idx++;
+  renderLearnCard();
+}
+
 function goQuiz(){switchTab('quiz');startQuiz();}
+
 function switchTab(tab,btn){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   if(tab==='stats')renderStats();
 }
 
-// Quiz
+// ── Quiz ──
+
 function startQuiz(){
   state.quizQs=buildQuiz(state.todayWords);
   state.quizIdx=0;
@@ -116,6 +162,7 @@ function startQuiz(){
   document.getElementById('q-result').style.display='none';
   renderQ();
 }
+
 function buildQuiz(words){
   const types=['en-ko','ko-en','fill'];
   return words.map((w,i)=>{
@@ -134,6 +181,7 @@ function buildQuiz(words){
     }
   });
 }
+
 function renderQ(){
   const q=state.quizQs[state.quizIdx];
   const cur=state.quizIdx+1,total=state.quizQs.length;
@@ -161,6 +209,7 @@ function renderQ(){
     el.appendChild(b);
   });
 }
+
 function pick(sel){
   const q=state.quizQs[state.quizIdx];
   const ok=sel===q.correctIdx;
@@ -174,6 +223,7 @@ function pick(sel){
     if(state.quizIdx<state.quizQs.length-1){state.quizIdx++;renderQ();}else showResult();
   },800);
 }
+
 function showResult(){
   const score=state.quizAnswers.filter(a=>a.ok).length;
   state.prog.correct+=score;
@@ -193,7 +243,7 @@ function showResult(){
   ).join('');
 }
 
-// Word list
+// ── Word list ──
 let curLv='all';
 function renderWordList(lv){
   if(lv!==undefined)curLv=lv;
@@ -212,7 +262,7 @@ function setLv(lv,btn){
   renderWordList(lv==='all'?'all':Number(lv));
 }
 
-// Stats
+// ── Stats ──
 function renderStats(){
   const p=state.prog;
   document.getElementById('st-days').textContent=p.dates.length;
