@@ -1,10 +1,9 @@
 const CIRC=131.95;
-const QUIZ_COUNT=20;
+const DAY_COUNT=20;
 const state={
   idx:0,
-  todayWords:[],seen:{},
+  todayWords:[],seen:{},answers:[],
   learnItems:[],
-  quizQs:[],quizIdx:0,quizAnswers:[],
   prog:loadProg()
 };
 
@@ -21,8 +20,7 @@ function seededShuffle(arr,seed){
   return r;
 }
 function hashStr(s){let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}return Math.abs(h);}
-function getDailyWords(ds){return seededShuffle([...WORDS],hashStr(ds)).slice(0,10);}
-function getDailyQuizWords(ds){return seededShuffle([...WORDS],hashStr(ds)+9999).slice(0,QUIZ_COUNT);}
+function getDailyWords(ds){return seededShuffle([...WORDS],hashStr(ds)).slice(0,DAY_COUNT);}
 
 function blankWord(sentence,word){
   const esc=word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
@@ -35,6 +33,9 @@ function blankWord(sentence,word){
 function init(){
   const today=todayStr();
   state.todayWords=getDailyWords(today);
+  state.idx=0;
+  state.seen={};
+  state.answers=[];
   updateStreak(today);
   document.getElementById('streak-count').textContent=state.prog.streak;
   const fmt={month:'long',day:'numeric',weekday:'short'};
@@ -63,15 +64,16 @@ function updateDots(){
   state.todayWords.forEach((_,i)=>{
     const d=document.getElementById('dot-'+i);
     if(!d)return;
-    d.className='dot'+(state.seen[state.todayWords[i].id]?' done':i===state.idx?' current':'');
+    const wid=state.todayWords[i].id;
+    d.className='dot'+(state.seen[wid]?(state.seen[wid]==='know'?' done':' miss'):i===state.idx?' current':'');
   });
 }
 
 function updateRing(){
   const done=Object.keys(state.seen).length;
-  const offset=CIRC*(1-done/10);
+  const offset=CIRC*(1-done/DAY_COUNT);
   document.getElementById('dp-fill').style.strokeDashoffset=offset;
-  document.getElementById('dp-text').textContent=done+'/10';
+  document.getElementById('dp-text').textContent=done+'/'+DAY_COUNT;
 }
 
 function buildLearnItems(){
@@ -84,10 +86,10 @@ function buildLearnItems(){
 }
 
 function renderLearnCard(){
+  document.getElementById('result-screen').style.display='none';
+
   if(state.idx>=state.todayWords.length){
-    document.getElementById('learn-card').style.display='none';
-    document.getElementById('learn-opts').style.display='none';
-    document.getElementById('done-banner').classList.add('show');
+    showResult();
     return;
   }
   const item=state.learnItems[state.idx];
@@ -97,6 +99,7 @@ function renderLearnCard(){
   document.getElementById('learn-feedback').style.display='none';
   document.getElementById('learn-card').style.display='block';
   document.getElementById('learn-opts').style.display='grid';
+
   const el=document.getElementById('learn-opts');
   el.innerHTML='';
   item.opts.forEach((opt,i)=>{
@@ -118,14 +121,17 @@ function pickLearn(sel){
     if(i===item.correctIdx)b.classList.add('correct');
     if(i===sel&&!ok)b.classList.add('wrong');
   });
-  state.seen[item.w.id]=ok?'know':'again';
+  state.seen[item.w.id]=ok?'know':'miss';
+  state.answers.push({w:item.w,ok});
+
   const fb=document.getElementById('learn-feedback');
   fb.style.display='flex';
   fb.className='learn-feedback '+(ok?'fb-ok':'fb-wrong');
   document.getElementById('lf-word').textContent=(ok?'✅ ':'❌ ')+item.w.word+' — '+item.w.korean;
   document.getElementById('lf-def').textContent=item.w.definition;
+
   if(ok){
-    setTimeout(nextLearnCard,1400);
+    setTimeout(nextLearnCard,1300);
     document.getElementById('btn-next').style.display='none';
   }else{
     document.getElementById('btn-next').style.display='inline-block';
@@ -135,86 +141,45 @@ function pickLearn(sel){
 }
 
 function nextLearnCard(){state.idx++;renderLearnCard();}
-function goQuiz(){switchTab('quiz');startQuiz();}
+
+function showResult(){
+  const score=state.answers.filter(a=>a.ok).length;
+  const total=state.answers.length;
+  state.prog.correct+=score;
+  state.prog.answered+=total;
+  state.prog.history.push({date:todayStr(),score,total});
+  saveProg();
+
+  document.getElementById('learn-card').style.display='none';
+  document.getElementById('learn-opts').style.display='none';
+  document.getElementById('learn-feedback').style.display='none';
+  document.getElementById('result-screen').style.display='flex';
+
+  document.getElementById('rs-num').textContent=score;
+  const pct=score/total;
+  const msgs=[[1,'완벽해요! 🎉','20개 모두 정답!'],[0.8,'훌륭해요! 👏','거의 다 맞혔어요'],[0.6,'잘 했어요! 😊','조금 더 연습해보요'],[0,'화이팅! 💪','복습하면 늘 는답니다']];
+  const [,m,s]=msgs.find(([t])=>pct>=t);
+  document.getElementById('rs-msg').textContent=m;
+  document.getElementById('rs-sub').textContent=s;
+  document.getElementById('rs-list').innerHTML=state.answers.map(a=>
+    `<div class="rs-row"><span class="rs-word">${a.w.word}</span><span class="rs-ko">${a.w.korean}</span><span>${a.ok?'✅':'❌'}</span></div>`
+  ).join('');
+}
+
+function restartLearn(){
+  state.idx=0;
+  state.seen={};
+  state.answers=[];
+  buildLearnItems();
+  renderLearnCard();
+  updateDots();
+  updateRing();
+}
 
 function switchTab(tab){
   document.querySelectorAll('.tab-pane').forEach(p=>p.classList.toggle('active',p.id==='tab-'+tab));
   document.querySelectorAll('.bn-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   if(tab==='stats')renderStats();
-}
-
-function startQuiz(){
-  const quizWords=getDailyQuizWords(todayStr());
-  state.quizQs=buildQuiz(quizWords);
-  state.quizIdx=0;
-  state.quizAnswers=[];
-  document.getElementById('q-intro').style.display='none';
-  document.getElementById('q-play').style.display='block';
-  document.getElementById('q-result').style.display='none';
-  renderQ();
-}
-
-function buildQuiz(words){
-  return words.map((w,i)=>{
-    const others=seededShuffle(WORDS.filter(x=>x.id!==w.id),w.id*31+i*7).slice(0,3);
-    const sentence=blankWord(w.example,w.word);
-    const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+200);
-    return{w,sentence,hint:w.example_ko||w.korean,opts,correctIdx:opts.indexOf(w.word)};
-  });
-}
-
-function renderQ(){
-  const q=state.quizQs[state.quizIdx];
-  const cur=state.quizIdx+1,total=state.quizQs.length;
-  document.getElementById('qp-num').textContent=cur+'/'+total;
-  document.getElementById('qp-bar-fill').style.width=(cur/total*100)+'%';
-  document.getElementById('qp-type').textContent='빈칸 채우기';
-  document.getElementById('q-hint').textContent='🇰🇷 '+q.hint;
-  const blanked=q.sentence.replace('_____','<span class="blank">_____</span>');
-  document.getElementById('q-main').innerHTML='<div class="q-sentence">'+blanked+'</div>';
-  const el=document.getElementById('q-opts');
-  el.innerHTML='';
-  q.opts.forEach((opt,i)=>{
-    const b=document.createElement('button');
-    b.className='opt';
-    b.textContent=opt;
-    b.onclick=()=>pick(i);
-    el.appendChild(b);
-  });
-}
-
-function pick(sel){
-  const q=state.quizQs[state.quizIdx];
-  const ok=sel===q.correctIdx;
-  state.quizAnswers.push({w:q.w,ok});
-  document.querySelectorAll('.opt').forEach((b,i)=>{
-    b.disabled=true;
-    if(i===q.correctIdx)b.classList.add('correct');
-    if(i===sel&&!ok)b.classList.add('wrong');
-  });
-  setTimeout(()=>{
-    if(state.quizIdx<state.quizQs.length-1){state.quizIdx++;renderQ();}else showResult();
-  },800);
-}
-
-function showResult(){
-  const score=state.quizAnswers.filter(a=>a.ok).length;
-  const total=state.quizAnswers.length;
-  state.prog.correct+=score;
-  state.prog.answered+=total;
-  state.prog.history.push({date:todayStr(),score,total});
-  saveProg();
-  document.getElementById('q-play').style.display='none';
-  document.getElementById('q-result').style.display='flex';
-  document.getElementById('qr-num').textContent=score;
-  const pct=score/total;
-  const msgs=[[1,'완벽해요! 🎉','20개 모두 정답!'],[0.8,'훌륭해요! 👏','거의 다 맞혔어요'],[0.6,'잘 했어요! 😊','조금 더 연습해요'],[0,'계속 화이팅! 💪','복습이 필요해요']];
-  const [,m,s]=msgs.find(([t])=>pct>=t);
-  document.getElementById('qr-msg').textContent=m;
-  document.getElementById('qr-sub').textContent=s;
-  document.getElementById('qr-list').innerHTML=state.quizAnswers.map(a=>
-    `<div class="qr-row"><span class="qr-word">${a.w.word}</span><span class="qr-ko">${a.w.korean}</span><span>${a.ok?'✅':'❌'}</span></div>`
-  ).join('');
 }
 
 let curLv='all';
@@ -238,13 +203,13 @@ function setLv(lv,btn){
 function renderStats(){
   const p=state.prog;
   document.getElementById('st-days').textContent=p.dates.length;
-  document.getElementById('st-words').textContent=p.dates.length*10;
+  document.getElementById('st-words').textContent=p.dates.length*20;
   document.getElementById('st-streak').textContent=p.streak;
   document.getElementById('st-acc').textContent=p.answered>0?Math.round(p.correct/p.answered*100)+'%':'-';
   const hist=[...p.history].reverse().slice(0,10);
   document.getElementById('st-hist-list').innerHTML=hist.length
     ?hist.map(h=>`<div class="hi"><span class="hi-date">${h.date}</span><span class="hi-score">${h.score}/${h.total||20}</span></div>`).join('')
-    :'<p class="no-data">퀴즈 기록이 없어요</p>';
+    :'<p class="no-data">학습 기록이 없어요</p>';
 }
 
 document.addEventListener('DOMContentLoaded',init);

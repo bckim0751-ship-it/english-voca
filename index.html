@@ -4,10 +4,8 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>비즈니스 영단어</title>
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
   <div id="app">
@@ -16,7 +14,7 @@
       <div class="top-bar-inner">
         <div class="top-logo">📗 비즈니스 영단어</div>
         <div class="top-streak">
-          <span class="flame">🔥</span>
+          <span>🔥</span>
           <span id="streak-count">0</span>
         </div>
       </div>
@@ -32,19 +30,20 @@
             <h2 class="section-title" id="today-date"></h2>
           </div>
           <div class="day-progress">
-            <svg width="52" height="52" viewBox="0 0 52 52">
+            <svg width="50" height="50" viewBox="0 0 52 52">
               <circle class="dp-bg" cx="26" cy="26" r="21"/>
               <circle class="dp-fill" id="dp-fill" cx="26" cy="26" r="21"/>
             </svg>
-            <span class="dp-text" id="dp-text">0/10</span>
+            <span class="dp-text" id="dp-text">0/20</span>
           </div>
         </div>
 
         <div class="step-dots" id="step-dots"></div>
 
+        <!-- 빈칸 채우기 카드 -->
         <div class="learn-card" id="learn-card">
           <div class="lc-hint">
-            <span class="lc-hint-label">🇰🇷 힌트</span>
+            <span class="lc-hint-label">🇰🇷 한국어</span>
             <p class="lc-korean" id="lc-korean"></p>
           </div>
           <div class="lc-sentence-wrap">
@@ -61,51 +60,15 @@
           <button class="btn-next" id="btn-next" onclick="nextLearnCard()">다음 →</button>
         </div>
 
-        <div class="done-banner" id="done-banner">
-          <p>🎉 오늘 학습 완료!</p>
-          <button onclick="goQuiz()">퀴즈 도전 →</button>
-        </div>
-      </section>
-
-      <!-- 퀴즈 -->
-      <section id="tab-quiz" class="tab-pane">
-        <div id="q-intro" class="q-intro">
-          <div class="qi-icon">🎯</div>
-          <h2>오늘의 퀴즈</h2>
-          <p>20문제 · 빈칸 채우기</p>
-          <div class="qi-types">
-            <span class="qi-chip">🇰🇷 한국어 문장 힌트</span>
-            <span class="qi-chip">영어 빈칸 채우기</span>
+        <!-- 완료 화면 -->
+        <div class="result-screen" id="result-screen" style="display:none">
+          <div class="rs-score">
+            <span id="rs-num">0</span><span class="rs-den">/20</span>
           </div>
-          <button class="btn-green" onclick="startQuiz()">시작하기</button>
-        </div>
-
-        <div id="q-play" style="display:none">
-          <div class="qp-head">
-            <div class="qp-meta">
-              <span class="qp-type" id="qp-type"></span>
-              <span class="qp-num" id="qp-num">1/20</span>
-            </div>
-            <div class="qp-bar"><div class="qp-bar-fill" id="qp-bar-fill"></div></div>
-          </div>
-          <div class="q-card" id="q-card">
-            <p class="q-hint" id="q-hint"></p>
-            <p class="q-main" id="q-main"></p>
-          </div>
-          <div class="q-opts" id="q-opts"></div>
-        </div>
-
-        <div id="q-result" style="display:none">
-          <div class="qr-score">
-            <span id="qr-num">0</span><span class="qr-den">/20</span>
-          </div>
-          <h2 id="qr-msg"></h2>
-          <p class="qr-sub" id="qr-sub"></p>
-          <div class="qr-list" id="qr-list"></div>
-          <div class="qr-btns">
-            <button class="btn-outline" onclick="startQuiz()">다시 풀기</button>
-            <button class="btn-green" onclick="switchTab('stats')">결과 보기</button>
-          </div>
+          <h2 id="rs-msg"></h2>
+          <p class="rs-sub" id="rs-sub"></p>
+          <div class="rs-list" id="rs-list"></div>
+          <button class="btn-green" onclick="restartLearn()">다시 풀기</button>
         </div>
       </section>
 
@@ -133,7 +96,7 @@
           <div class="st-card"><div class="st-ico">🎯</div><div class="st-val" id="st-acc">-</div><div class="st-lbl">정답률</div></div>
         </div>
         <div class="st-hist">
-          <h3>퀴즈 기록</h3>
+          <h3>학습 기록</h3>
           <div id="st-hist-list"></div>
         </div>
       </section>
@@ -143,11 +106,8 @@
       <button class="bn-btn active" data-tab="today" onclick="switchTab('today')">
         <span class="bn-ico">📚</span><span class="bn-lbl">학습</span>
       </button>
-      <button class="bn-btn" data-tab="quiz" onclick="switchTab('quiz')">
-        <span class="bn-ico">🎯</span><span class="bn-lbl">퀴즈</span>
-      </button>
       <button class="bn-btn" data-tab="words" onclick="switchTab('words')">
-        <span class="bn-ico">📋</span><span class="bn-lbl">다어장</span>
+        <span class="bn-ico">📋</span><span class="bn-lbl">단어장</span>
       </button>
       <button class="bn-btn" data-tab="stats" onclick="switchTab('stats')">
         <span class="bn-ico">📊</span><span class="bn-lbl">통계</span>
@@ -155,7 +115,7 @@
     </nav>
 
   </div>
-  <script src="js/words.js?v=4"></script>
-  <script src="js/app.js?v=4"></script>
+  <script src="js/words.js?v=5"></script>
+  <script src="js/app.js?v=5"></script>
 </body>
 </html>
