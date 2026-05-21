@@ -30,12 +30,16 @@ function blankWord(sentence,word){
   return r!==sentence?r:sentence.replace(new RegExp(esc,'gi'),'_____');
 }
 
+function letterHint(word){
+  const first=word[0].toUpperCase();
+  const rest='_ '.repeat(word.length-1).trim();
+  return first+' '+rest+'  ('+word.length+'글자)';
+}
+
 function init(){
   const today=todayStr();
   state.todayWords=getDailyWords(today);
-  state.idx=0;
-  state.seen={};
-  state.answers=[];
+  state.idx=0;state.seen={};state.answers=[];
   updateStreak(today);
   document.getElementById('streak-count').textContent=state.prog.streak;
   const fmt={month:'long',day:'numeric',weekday:'short'};
@@ -79,60 +83,57 @@ function updateRing(){
 function buildLearnItems(){
   state.learnItems=state.todayWords.map((w,i)=>{
     const sentence=blankWord(w.example,w.word);
-    const others=seededShuffle(WORDS.filter(x=>x.id!==w.id),w.id*31+i*7).slice(0,3);
-    const opts=seededShuffle([w.word,...others.map(x=>x.word)],w.id+i*13+200);
-    return{w,sentence,opts,correctIdx:opts.indexOf(w.word)};
+    return{w,sentence};
   });
 }
 
 function renderLearnCard(){
   document.getElementById('result-screen').style.display='none';
+  if(state.idx>=state.todayWords.length){showResult();return;}
 
-  if(state.idx>=state.todayWords.length){
-    showResult();
-    return;
-  }
   const item=state.learnItems[state.idx];
   const blanked=item.sentence.replace('_____','<span class="blank">_____</span>');
+
   document.getElementById('lc-korean').textContent=item.w.example_ko||item.w.korean;
   document.getElementById('lc-sentence').innerHTML=blanked;
+  document.getElementById('lc-letter-hint').textContent=letterHint(item.w.word);
+
+  const inp=document.getElementById('answer-input');
+  inp.value='';
+  inp.disabled=false;
+  inp.className='answer-input';
+
   document.getElementById('learn-feedback').style.display='none';
   document.getElementById('learn-card').style.display='block';
-  document.getElementById('learn-opts').style.display='grid';
+  document.getElementById('answer-area').style.display='flex';
 
-  const el=document.getElementById('learn-opts');
-  el.innerHTML='';
-  item.opts.forEach((opt,i)=>{
-    const b=document.createElement('button');
-    b.className='lopt';
-    b.textContent=opt;
-    b.onclick=()=>pickLearn(i);
-    el.appendChild(b);
-  });
   updateDots();
   updateRing();
+  setTimeout(()=>inp.focus(),100);
 }
 
-function pickLearn(sel){
+function submitAnswer(){
   const item=state.learnItems[state.idx];
-  const ok=sel===item.correctIdx;
-  document.querySelectorAll('.lopt').forEach((b,i)=>{
-    b.disabled=true;
-    if(i===item.correctIdx)b.classList.add('correct');
-    if(i===sel&&!ok)b.classList.add('wrong');
-  });
+  const inp=document.getElementById('answer-input');
+  const val=inp.value.trim();
+  if(!val)return;
+
+  const ok=val.toLowerCase()===item.w.word.toLowerCase();
+  inp.disabled=true;
+  inp.className='answer-input '+(ok?'inp-correct':'inp-wrong');
+
   state.seen[item.w.id]=ok?'know':'miss';
-  state.answers.push({w:item.w,ok});
+  state.answers.push({w:item.w,ok,typed:val});
 
   const fb=document.getElementById('learn-feedback');
   fb.style.display='flex';
   fb.className='learn-feedback '+(ok?'fb-ok':'fb-wrong');
   document.getElementById('lf-word').textContent=(ok?'✅ ':'❌ ')+item.w.word+' — '+item.w.korean;
-  document.getElementById('lf-def').textContent=item.w.definition;
+  document.getElementById('lf-def').textContent=ok?item.w.definition:'정답: '+item.w.word+' / '+item.w.definition;
 
   if(ok){
-    setTimeout(nextLearnCard,1300);
     document.getElementById('btn-next').style.display='none';
+    setTimeout(nextLearnCard,1400);
   }else{
     document.getElementById('btn-next').style.display='inline-block';
   }
@@ -151,29 +152,25 @@ function showResult(){
   saveProg();
 
   document.getElementById('learn-card').style.display='none';
-  document.getElementById('learn-opts').style.display='none';
+  document.getElementById('answer-area').style.display='none';
   document.getElementById('learn-feedback').style.display='none';
   document.getElementById('result-screen').style.display='flex';
 
   document.getElementById('rs-num').textContent=score;
   const pct=score/total;
-  const msgs=[[1,'완벽해요! 🎉','20개 모두 정답!'],[0.8,'훌륭해요! 👏','거의 다 맞혔어요'],[0.6,'잘 했어요! 😊','조금 더 연습해보요'],[0,'화이팅! 💪','복습하면 늘 는답니다']];
+  const msgs=[[1,'완벽해요! 🎉','20개 모두 정답!'],[0.8,'훌륭해요! 👏','거의 다 맞혔어요'],[0.6,'잘 했어요! 😊','조금 더 연습해보요'],[0,'화이팅! 💪','복습하면 늘 늘어요']];
   const [,m,s]=msgs.find(([t])=>pct>=t);
   document.getElementById('rs-msg').textContent=m;
   document.getElementById('rs-sub').textContent=s;
-  document.getElementById('rs-list').innerHTML=state.answers.map(a=>
-    `<div class="rs-row"><span class="rs-word">${a.w.word}</span><span class="rs-ko">${a.w.korean}</span><span>${a.ok?'✅':'❌'}</span></div>`
-  ).join('');
+  document.getElementById('rs-list').innerHTML=state.answers.map(a=>{
+    const ok=a.ok;
+    return `<div class="rs-row"><span class="rs-word">${a.w.word}</span><span class="rs-typed ${ok?'rs-ok':'rs-bad'}">${a.typed}</span><span class="rs-ko">${a.w.korean}</span><span>${ok?'✅':'❌'}</span></div>`;
+  }).join('');
 }
 
 function restartLearn(){
-  state.idx=0;
-  state.seen={};
-  state.answers=[];
-  buildLearnItems();
-  renderLearnCard();
-  updateDots();
-  updateRing();
+  state.idx=0;state.seen={};state.answers=[];
+  buildLearnItems();renderLearnCard();updateDots();updateRing();
 }
 
 function switchTab(tab){
