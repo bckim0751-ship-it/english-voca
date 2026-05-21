@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>비즈니스 영단어</title>
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
   <div id="app">
@@ -17,7 +17,6 @@
     </header>
 
     <main class="main-content">
-      <!-- 학습 -->
       <section id="tab-today" class="tab-pane active">
         <div class="section-head">
           <div>
@@ -44,7 +43,10 @@
             <p class="lc-instruction">빈칸에 알맞은 영어 단어를 입력하세요</p>
             <p class="lc-sentence" id="lc-sentence"></p>
           </div>
-          <div class="lc-letter-hint" id="lc-letter-hint"></div>
+          <div class="lc-hint-row">
+            <button class="hint-btn" id="hint-btn" onclick="showHint()">💡 힌트</button>
+            <span class="lc-letter-hint" id="lc-letter-hint"></span>
+          </div>
         </div>
 
         <div class="answer-area" id="answer-area">
@@ -72,7 +74,6 @@
         </div>
       </section>
 
-      <!-- 단어장 -->
       <section id="tab-words" class="tab-pane">
         <div class="wl-head">
           <h2>단어장 <span class="wl-cnt" id="wl-cnt"></span></h2>
@@ -86,7 +87,6 @@
         <div class="wl-list" id="wl-list"></div>
       </section>
 
-      <!-- 통계 -->
       <section id="tab-stats" class="tab-pane">
         <h2 class="st-title">학습 통계</h2>
         <div class="st-grid">
@@ -95,10 +95,7 @@
           <div class="st-card"><div class="st-ico">🔥</div><div class="st-val" id="st-streak">0</div><div class="st-lbl">연속 학습</div></div>
           <div class="st-card"><div class="st-ico">🎯</div><div class="st-val" id="st-acc">-</div><div class="st-lbl">정답률</div></div>
         </div>
-        <div class="st-hist">
-          <h3>학습 기록</h3>
-          <div id="st-hist-list"></div>
-        </div>
+        <div class="st-hist"><h3>학습 기록</h3><div id="st-hist-list"></div></div>
       </section>
     </main>
 
@@ -114,7 +111,7 @@
       </button>
     </nav>
   </div>
-  <script src="js/words.js?v=6"></script>
-  <script src="js/app.js?v=6"></script>
+  <script src="js/words.js?v=7"></script>
+  <script src="js/app.js?v=7"></script>
 </body>
 </html>

@@ -32,8 +32,8 @@ function blankWord(sentence,word){
 
 function letterHint(word){
   const first=word[0].toUpperCase();
-  const rest='_ '.repeat(word.length-1).trim();
-  return first+' '+rest+'  ('+word.length+'글자)';
+  const dashes='_ '.repeat(word.length-1).trim();
+  return first+' '+dashes+'  ('+word.length+'글자)';
 }
 
 function init(){
@@ -87,6 +87,12 @@ function buildLearnItems(){
   });
 }
 
+function showHint(){
+  const item=state.learnItems[state.idx];
+  document.getElementById('lc-letter-hint').textContent=letterHint(item.w.word);
+  document.getElementById('hint-btn').style.display='none';
+}
+
 function renderLearnCard(){
   document.getElementById('result-screen').style.display='none';
   if(state.idx>=state.todayWords.length){showResult();return;}
@@ -96,19 +102,19 @@ function renderLearnCard(){
 
   document.getElementById('lc-korean').textContent=item.w.example_ko||item.w.korean;
   document.getElementById('lc-sentence').innerHTML=blanked;
-  document.getElementById('lc-letter-hint').textContent=letterHint(item.w.word);
+
+  // 힌트 초기화 - 숨김
+  document.getElementById('lc-letter-hint').textContent='';
+  document.getElementById('hint-btn').style.display='inline-flex';
 
   const inp=document.getElementById('answer-input');
-  inp.value='';
-  inp.disabled=false;
-  inp.className='answer-input';
+  inp.value='';inp.disabled=false;inp.className='answer-input';
 
   document.getElementById('learn-feedback').style.display='none';
   document.getElementById('learn-card').style.display='block';
   document.getElementById('answer-area').style.display='flex';
 
-  updateDots();
-  updateRing();
+  updateDots();updateRing();
   setTimeout(()=>inp.focus(),100);
 }
 
@@ -129,7 +135,7 @@ function submitAnswer(){
   fb.style.display='flex';
   fb.className='learn-feedback '+(ok?'fb-ok':'fb-wrong');
   document.getElementById('lf-word').textContent=(ok?'✅ ':'❌ ')+item.w.word+' — '+item.w.korean;
-  document.getElementById('lf-def').textContent=ok?item.w.definition:'정답: '+item.w.word+' / '+item.w.definition;
+  document.getElementById('lf-def').textContent=ok?item.w.definition:'정답: '+item.w.word+'  /  '+item.w.definition;
 
   if(ok){
     document.getElementById('btn-next').style.display='none';
@@ -137,8 +143,7 @@ function submitAnswer(){
   }else{
     document.getElementById('btn-next').style.display='inline-block';
   }
-  updateDots();
-  updateRing();
+  updateDots();updateRing();
 }
 
 function nextLearnCard(){state.idx++;renderLearnCard();}
@@ -163,8 +168,7 @@ function showResult(){
   document.getElementById('rs-msg').textContent=m;
   document.getElementById('rs-sub').textContent=s;
   document.getElementById('rs-list').innerHTML=state.answers.map(a=>{
-    const ok=a.ok;
-    return `<div class="rs-row"><span class="rs-word">${a.w.word}</span><span class="rs-typed ${ok?'rs-ok':'rs-bad'}">${a.typed}</span><span class="rs-ko">${a.w.korean}</span><span>${ok?'✅':'❌'}</span></div>`;
+    return `<div class="rs-row"><span class="rs-word">${a.w.word}</span><span class="rs-typed ${a.ok?'rs-ok':'rs-bad'}">${a.typed}</span><span class="rs-ko">${a.w.korean}</span><span>${a.ok?'✅':'❌'}</span></div>`;
   }).join('');
 }
 

@@ -32,7 +32,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .dot.miss{background:#ef4444}
 .dot.current{background:var(--green);opacity:.4}
 
-/* Learn Card */
 .learn-card{background:#1c2030;border-radius:var(--r);padding:20px 18px 16px;margin-bottom:12px;box-shadow:0 8px 28px rgba(0,0,0,.2)}
 .lc-hint{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;margin-bottom:14px}
 .lc-hint-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:1px;display:block;margin-bottom:4px;text-transform:uppercase}
@@ -41,16 +40,25 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .lc-instruction{font-size:9px;font-weight:700;color:rgba(255,255,255,.3);letter-spacing:.8px;margin-bottom:7px;text-transform:uppercase}
 .lc-sentence{font-size:17px;font-weight:600;color:#fff;line-height:1.75;word-break:break-word}
 .blank{color:#FFD60A;font-weight:900;letter-spacing:2px}
-.lc-letter-hint{font-size:15px;font-weight:600;color:rgba(255,255,255,.6);letter-spacing:3px;text-align:center;padding:6px 0 2px}
 
-/* Answer input */
+.lc-hint-row{display:flex;align-items:center;gap:12px;min-height:28px}
+.hint-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;border-radius:20px;
+  border:1.5px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.07);
+  color:rgba(255,255,255,.6);font-size:12px;font-weight:600;
+  cursor:pointer;font-family:inherit;transition:.15s;
+}
+.hint-btn:hover{background:rgba(255,255,255,.14);color:#fff}
+.lc-letter-hint{font-size:15px;font-weight:600;color:#FFD60A;letter-spacing:3px}
+
 .answer-area{display:flex;gap:10px;margin-bottom:12px;align-items:center}
 .answer-input{
   flex:1;padding:14px 16px;
   border:2px solid var(--border);border-radius:var(--r-sm);
   font-size:16px;font-weight:600;font-family:inherit;
-  background:#fff;color:var(--text);outline:none;
-  transition:.15s;
+  background:#fff;color:var(--text);outline:none;transition:.15s;
 }
 .answer-input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,196,113,.1)}
 .answer-input.inp-correct{border-color:var(--green);background:#e8faf3;color:var(--green-dark)}
@@ -59,12 +67,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
   padding:14px 20px;background:var(--green);color:#fff;
   border:none;border-radius:var(--r-sm);
   font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;
-  white-space:nowrap;transition:.15s;
-  box-shadow:0 3px 10px rgba(0,196,113,.3);
+  white-space:nowrap;box-shadow:0 3px 10px rgba(0,196,113,.3);transition:.15s;
 }
 .submit-btn:active{transform:scale(.96)}
 
-/* Feedback */
 .learn-feedback{border-radius:var(--r-sm);padding:14px 16px;display:flex;flex-direction:column;gap:4px;margin-bottom:8px}
 .learn-feedback.fb-ok{background:#e8faf3;border:2px solid var(--green)}
 .learn-feedback.fb-wrong{background:#fff0ef;border:2px solid #ef4444}
@@ -72,7 +78,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .lf-def{font-size:12px;color:var(--sub);line-height:1.5}
 .btn-next{align-self:flex-end;margin-top:6px;background:var(--green);color:#fff;border:none;padding:8px 20px;border-radius:20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
 
-/* Result */
 .result-screen{flex-direction:column;align-items:center;padding:32px 0;gap:14px}
 .rs-score{width:120px;height:120px;background:linear-gradient(145deg,var(--green),var(--green-dark));border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 28px rgba(0,196,113,.3)}
 #rs-num{font-size:44px;font-weight:900;color:#fff}
@@ -90,7 +95,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .btn-green{background:var(--green);color:#fff;border:none;padding:13px 36px;border-radius:26px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;box-shadow:0 4px 14px rgba(0,196,113,.3)}
 .btn-green:active{transform:scale(.97)}
 
-/* Word List */
 .wl-head{margin-bottom:14px}
 .wl-head h2{font-size:19px;font-weight:800;margin-bottom:10px}
 .wl-cnt{font-size:13px;color:var(--sub);font-weight:500}
@@ -109,7 +113,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .lv-2{background:#fef9e7;color:#b45309}
 .lv-3{background:#fef2f2;color:#dc2626}
 
-/* Stats */
 .st-title{font-size:19px;font-weight:800;margin-bottom:16px}
 .st-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
 .st-card{background:#fff;border:1.5px solid var(--border);border-radius:var(--r);padding:18px;text-align:center}
@@ -122,7 +125,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans KR',sans
 .hi-score{font-weight:800;color:var(--green)}
 .no-data{text-align:center;color:var(--sub);font-size:13px;padding:30px}
 
-/* Bottom Nav */
 .bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;background:#fff;border-top:1px solid var(--border);display:flex;padding:8px 0 env(safe-area-inset-bottom,0);z-index:200;box-shadow:0 -4px 20px rgba(0,0,0,.05)}
 .bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px;background:none;border:none;cursor:pointer;font-family:inherit}
 .bn-ico{font-size:22px;line-height:1}
